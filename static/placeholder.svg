@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <rect width="400" height="400" fill="#e8e0d8"/>
+  <g transform="translate(200,180)" fill="#b8a99a">
+    <!-- Fork -->
+    <g transform="translate(-50,0)">
+      <rect x="-3" y="-60" width="6" height="120" rx="3"/>
+      <rect x="-15" y="-80" width="6" height="35" rx="3"/>
+      <rect x="-3" y="-80" width="6" height="35" rx="3"/>
+      <rect x="9" y="-80" width="6" height="35" rx="3"/>
+    </g>
+    <!-- Knife -->
+    <g transform="translate(50,0)">
+      <rect x="-3" y="-60" width="6" height="120" rx="3"/>
+      <path d="M3,-80 Q18,-60 3,-40 Z" fill="#b8a99a"/>
+    </g>
+  </g>
+  <text x="200" y="280" text-anchor="middle" font-family="sans-serif" font-size="18" fill="#b8a99a">No Image</text>
+</svg>

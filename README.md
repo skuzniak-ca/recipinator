@@ -1,1 +1,3 @@
 # recipinator
+
+The purpose of the app is to serve as a digital recipe storage location, where a user can keep a listing of all of the recipes they have found online that they like. The app allows a user to input the URL of a recipe, the app will then scrape the ingredients list and instruction from the URL and add to the local database. The UI is tile-based, allows for the user to upload an image of the food, as well as perform rudimentary sorting. This was coded by Claude, who I thank for his help.

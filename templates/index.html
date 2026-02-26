@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recipinator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Recipinator</h1>
+        <div class="header-actions">
+            <button id="btn-add-recipe" class="btn btn-primary">+ Add Recipe</button>
+        </div>
+    </header>
+
+    <div class="filter-bar">
+        <div class="filter-input-wrapper">
+            <input type="text" id="filter-input" placeholder="Filter by ingredients (semicolon-separated, e.g. chicken; garlic)">
+            <button id="btn-filter" class="btn">Filter</button>
+            <button id="btn-clear-filter" class="btn btn-secondary" style="display:none;">Clear</button>
+        </div>
+    </div>
+
+    <main id="recipe-grid" class="recipe-grid">
+        <!-- Tiles rendered by JS -->
+    </main>
+
+    <div id="empty-state" class="empty-state" style="display:none;">
+        <p>No recipes found. Add your first recipe!</p>
+    </div>
+
+    <!-- Add Recipe Modal -->
+    <div id="modal-add" class="modal" style="display:none;">
+        <div class="modal-content modal-small">
+            <div class="modal-header">
+                <h2>Add Recipe</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <label for="recipe-url">Recipe URL</label>
+                <input type="url" id="recipe-url" placeholder="https://example.com/recipe" required>
+                <div id="add-error" class="error-msg" style="display:none;"></div>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-submit-recipe" class="btn btn-primary">Add Recipe</button>
+            </div>
+            <div id="add-loading" class="loading" style="display:none;">
+                <div class="spinner"></div>
+                <p>Scraping recipe...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recipe Detail Modal -->
+    <div id="modal-detail" class="modal" style="display:none;">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2 id="detail-title"></h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="detail-top">
+                    <div class="detail-image-section">
+                        <img id="detail-image" src="" alt="Recipe image">
+                        <div class="image-upload">
+                            <label for="image-upload-input" class="btn btn-secondary">Upload Image</label>
+                            <input type="file" id="image-upload-input" accept="image/*" style="display:none;">
+                        </div>
+                    </div>
+                    <div class="detail-meta">
+                        <div class="detail-rating">
+                            <span class="rating-label">Rating:</span>
+                            <div id="detail-stars" class="stars">
+                                <span class="star" data-value="1">&#9733;</span>
+                                <span class="star" data-value="2">&#9733;</span>
+                                <span class="star" data-value="3">&#9733;</span>
+                                <span class="star" data-value="4">&#9733;</span>
+                                <span class="star" data-value="5">&#9733;</span>
+                            </div>
+                        </div>
+                        <div class="detail-url">
+                            <a id="detail-link" href="" target="_blank" rel="noopener">View Original Recipe</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-sections">
+                    <div class="detail-ingredients">
+                        <h3>Ingredients</h3>
+                        <ul id="detail-ingredients-list"></ul>
+                        <div class="ingredient-tags" id="detail-tags"></div>
+                    </div>
+                    <div class="detail-instructions">
+                        <h3>Instructions</h3>
+                        <div id="detail-instructions-text"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-delete-recipe" class="btn btn-danger">Delete Recipe</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

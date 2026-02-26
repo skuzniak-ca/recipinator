@@ -1,0 +1,7 @@
+venv/
+__pycache__/
+*.pyc
+recipinator.db
+static/uploads/*
+!static/uploads/.gitkeep
+*.log
