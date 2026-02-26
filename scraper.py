@@ -1,5 +1,6 @@
 import re
 import json
+import html
 import requests
 from bs4 import BeautifulSoup
 
@@ -310,6 +311,11 @@ def scrape_recipe(url):
     if not result['title']:
         result['title'] = 'Untitled Recipe'
 
+    # Clean up raw data
+    result['ingredients_raw'] = [_clean_text(r) for r in result['ingredients_raw']]
+    result['instructions'] = _clean_text(result['instructions'])
+    result['title'] = _clean_text(result['title'])
+
     # Normalize ingredients
     ingredients = []
     seen_names = set()
@@ -328,3 +334,20 @@ def scrape_recipe(url):
         'ingredients': ingredients,
         'instructions': result['instructions'] or 'No instructions found.',
     }
+
+
+def _clean_text(text):
+    """Decode HTML entities and strip price/cost annotations from text."""
+    if not text:
+        return text
+    # Decode HTML entities (e.g. &#039; -> ', &amp; -> &)
+    text = html.unescape(text)
+    # Strip dollar amounts like ($0.42), ( $1.50 ), ($12.99), etc.
+    text = re.sub(r'\s*\(\s*\$\d+(?:\.\d{1,2})?\s*\)', '', text)
+    # Also strip standalone prices not in parens: $0.42
+    text = re.sub(r'\s*\$\d+(?:\.\d{1,2})?', '', text)
+    # Clean up trailing commas and empty parens left after stripping
+    text = re.sub(r',\s*\)', ')', text)
+    text = re.sub(r'\(\s*\)', '', text)
+    text = re.sub(r'\s+', ' ', text)
+    return text.strip().rstrip(',')
