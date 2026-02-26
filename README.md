@@ -1,3 +1,55 @@
-# recipinator
+# Recipinator
 
-The purpose of the app is to serve as a digital recipe storage location, where a user can keep a listing of all of the recipes they have found online that they like. The app allows a user to input the URL of a recipe, the app will then scrape the ingredients list and instruction from the URL and add to the local database. The UI is tile-based, allows for the user to upload an image of the food, as well as perform rudimentary sorting. This was coded by Claude, who I thank for his help.
+A self-hosted recipe manager for your local network. Paste a recipe URL, and Recipinator scrapes the ingredients and instructions automatically. Browse your collection in a responsive tile-based UI.
+
+## Features
+
+- **URL scraping** — paste a link and the app extracts title, ingredients, instructions, and hero image (JSON-LD first, HTML fallback)
+- **Ingredient filtering** — search by one or more ingredients (AND logic, semicolon-separated)
+- **Star ratings** — rate recipes 0–5 stars
+- **Image support** — auto-scraped hero images, or upload your own (png/jpg/gif/webp, 5 MB max)
+- **Responsive layout** — 4-column grid on desktop down to single-column on mobile
+- **No account required** — designed for trusted home networks
+
+## Tech Stack
+
+Flask · SQLite · vanilla HTML/CSS/JS (no frontend framework)
+
+## Quick Start
+
+```bash
+git clone <repo-url> && cd recipinator
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+python3 app.py
+```
+
+Open `http://localhost:5000` (or `http://<your-lan-ip>:5000` from other devices).
+
+## Project Structure
+
+```
+app.py            Flask routes and image upload handling
+database.py       SQLite schema, CRUD helpers, ingredient filtering
+scraper.py        Recipe scraping and ingredient normalization
+templates/
+  index.html      Single-page app template
+static/
+  css/style.css   Responsive layout and styling
+  js/app.js       SPA logic (API calls, DOM rendering)
+  uploads/        User-uploaded images (gitignored)
+```
+
+## API
+
+| Method | Route | Purpose |
+|--------|-------|---------|
+| GET | `/api/recipes` | List all or filter (`?ingredients=chicken;garlic`) |
+| GET | `/api/recipes/<id>` | Single recipe detail |
+| POST | `/api/recipes` | Add recipe (`{"url": "..."}`) |
+| PUT | `/api/recipes/<id>/rating` | Set rating (`{"rating": 4}`) |
+| POST | `/api/recipes/<id>/image` | Upload image (multipart) |
+| DELETE | `/api/recipes/<id>/image` | Remove image |
+| DELETE | `/api/recipes/<id>` | Delete recipe |
+| GET | `/api/ingredients` | Unique ingredient names (for autocomplete) |
