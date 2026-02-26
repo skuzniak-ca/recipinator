@@ -26,6 +26,7 @@ const detailIngredientsList = document.getElementById('detail-ingredients-list')
 const detailTags = document.getElementById('detail-tags');
 const detailInstructionsText = document.getElementById('detail-instructions-text');
 const imageUploadInput = document.getElementById('image-upload-input');
+const btnRemoveImage = document.getElementById('btn-remove-image');
 const btnDeleteRecipe = document.getElementById('btn-delete-recipe');
 
 // --- API helpers ---
@@ -153,6 +154,7 @@ function openDetail(recipeId) {
     detailTitle.textContent = recipe.title;
     detailImage.src = getImageUrl(recipe);
     detailLink.href = recipe.url;
+    btnRemoveImage.style.display = recipe.image_filename ? 'inline-block' : 'none';
 
     // Stars
     updateStarsDisplay(recipe.rating);
@@ -221,12 +223,32 @@ async function uploadImage(file) {
         });
         // Update display
         detailImage.src = '/static/uploads/' + result.image_filename;
+        btnRemoveImage.style.display = 'inline-block';
         // Update local state
         const recipe = allRecipes.find(r => r.id === currentRecipeId);
         if (recipe) recipe.image_filename = result.image_filename;
         renderGrid();
     } catch (err) {
         alert('Failed to upload image: ' + err.message);
+    }
+}
+
+// --- Remove Image ---
+async function removeImage() {
+    if (!currentRecipeId) return;
+    if (!confirm('Remove the image for this recipe?')) return;
+
+    try {
+        await api(`/api/recipes/${currentRecipeId}/image`, {
+            method: 'DELETE',
+        });
+        detailImage.src = '/static/placeholder.svg';
+        btnRemoveImage.style.display = 'none';
+        const recipe = allRecipes.find(r => r.id === currentRecipeId);
+        if (recipe) recipe.image_filename = null;
+        renderGrid();
+    } catch (err) {
+        alert('Failed to remove image: ' + err.message);
     }
 }
 
@@ -270,6 +292,7 @@ btnAddRecipe.addEventListener('click', openAddModal);
 btnSubmitRecipe.addEventListener('click', submitRecipe);
 btnFilter.addEventListener('click', applyFilter);
 btnClearFilter.addEventListener('click', clearFilter);
+btnRemoveImage.addEventListener('click', removeImage);
 btnDeleteRecipe.addEventListener('click', deleteRecipe);
 
 // Enter key in URL input

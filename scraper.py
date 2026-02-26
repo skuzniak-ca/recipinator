@@ -1,6 +1,8 @@
+import os
 import re
 import json
 import html
+import uuid
 import requests
 from bs4 import BeautifulSoup
 
@@ -130,11 +132,15 @@ def _try_json_ld(soup):
         instructions_data = data.get('recipeInstructions', [])
         instructions = _parse_instructions(instructions_data)
 
+        # Extract image URL
+        image_url = _extract_json_ld_image(data)
+
         if title or ingredients_raw:
             return {
                 'title': title,
                 'ingredients_raw': ingredients_raw,
                 'instructions': instructions,
+                'image_url': image_url,
             }
 
     return None
@@ -164,6 +170,22 @@ def _parse_instructions(instructions_data):
                             steps.append(sub_item)
 
     return '\n'.join(f"{i+1}. {step}" for i, step in enumerate(steps) if step)
+
+
+def _extract_json_ld_image(data):
+    """Extract image URL from JSON-LD Recipe data."""
+    image_data = data.get('image')
+    if isinstance(image_data, str):
+        return image_data
+    if isinstance(image_data, list) and image_data:
+        first = image_data[0]
+        if isinstance(first, str):
+            return first
+        if isinstance(first, dict):
+            return first.get('url', '')
+    if isinstance(image_data, dict):
+        return image_data.get('url', '')
+    return None
 
 
 def _try_html_fallback(soup):
@@ -203,10 +225,17 @@ def _try_html_fallback(soup):
         if instructions_text:
             instructions = instructions_text
 
+    # Extract image from og:image meta tag
+    image_url = None
+    og_image = soup.find('meta', property='og:image')
+    if og_image:
+        image_url = og_image.get('content', '').strip() or None
+
     return {
         'title': title,
         'ingredients_raw': ingredients_raw,
         'instructions': instructions,
+        'image_url': image_url,
     }
 
 
@@ -307,6 +336,8 @@ def scrape_recipe(url):
                 result['instructions'] = fallback['instructions']
             if not result['title']:
                 result['title'] = fallback['title']
+            if not result.get('image_url'):
+                result['image_url'] = fallback.get('image_url')
 
     if not result['title']:
         result['title'] = 'Untitled Recipe'
@@ -333,7 +364,61 @@ def scrape_recipe(url):
         'title': result['title'],
         'ingredients': ingredients,
         'instructions': result['instructions'] or 'No instructions found.',
+        'image_url': result.get('image_url'),
     }
+
+
+def download_image(image_url, save_dir):
+    """Download an image from a URL and save it locally.
+
+    Returns the saved filename on success, None on failure.
+    Failures are silent — image download should never prevent recipe saving.
+    """
+    if not image_url:
+        return None
+
+    # Resolve protocol-relative URLs
+    if image_url.startswith('//'):
+        image_url = 'https:' + image_url
+
+    try:
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 '
+                           '(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        }
+        response = requests.get(image_url, headers=headers, timeout=10)
+        response.raise_for_status()
+
+        content_type = response.headers.get('Content-Type', '').split(';')[0].strip()
+        ext_map = {
+            'image/jpeg': 'jpg',
+            'image/png': 'png',
+            'image/gif': 'gif',
+            'image/webp': 'webp',
+        }
+        ext = ext_map.get(content_type)
+        if not ext:
+            # Try to infer from URL path
+            url_path = image_url.split('?')[0].lower()
+            for check_ext in ('jpg', 'jpeg', 'png', 'gif', 'webp'):
+                if url_path.endswith('.' + check_ext):
+                    ext = 'jpg' if check_ext == 'jpeg' else check_ext
+                    break
+            if not ext:
+                ext = 'jpg'
+
+        # Enforce 5MB size limit
+        if len(response.content) > 5 * 1024 * 1024:
+            return None
+
+        filename = f"{uuid.uuid4().hex}.{ext}"
+        filepath = os.path.join(save_dir, filename)
+        with open(filepath, 'wb') as f:
+            f.write(response.content)
+
+        return filename
+    except Exception:
+        return None
 
 
 def _clean_text(text):

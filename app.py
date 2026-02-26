@@ -3,7 +3,7 @@ import uuid
 from flask import Flask, request, jsonify, render_template, send_from_directory
 from database import init_db, add_recipe, get_all_recipes, get_recipe, \
     update_rating, update_image, filter_recipes, delete_recipe, get_all_ingredient_names
-from scraper import scrape_recipe
+from scraper import scrape_recipe, download_image
 
 app = Flask(__name__)
 
@@ -68,6 +68,12 @@ def api_add_recipe():
         ingredients=result['ingredients']
     )
 
+    # Download scraped image if available
+    if result.get('image_url'):
+        image_filename = download_image(result['image_url'], UPLOAD_FOLDER)
+        if image_filename:
+            update_image(recipe_id, image_filename)
+
     recipe = get_recipe(recipe_id)
     return jsonify(recipe), 201
 
@@ -126,6 +132,21 @@ def api_upload_image(recipe_id):
 
     update_image(recipe_id, filename)
     return jsonify({'id': recipe_id, 'image_filename': filename})
+
+
+@app.route('/api/recipes/<int:recipe_id>/image', methods=['DELETE'])
+def api_delete_image(recipe_id):
+    recipe = get_recipe(recipe_id)
+    if recipe is None:
+        return jsonify({'error': 'Recipe not found'}), 404
+
+    if recipe['image_filename']:
+        image_path = os.path.join(UPLOAD_FOLDER, recipe['image_filename'])
+        if os.path.exists(image_path):
+            os.remove(image_path)
+        update_image(recipe_id, None)
+
+    return jsonify({'id': recipe_id, 'image_filename': None})
 
 
 @app.route('/api/recipes/<int:recipe_id>', methods=['DELETE'])
