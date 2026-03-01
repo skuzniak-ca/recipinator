@@ -25,6 +25,16 @@ def index():
     return render_template('index.html')
 
 
+@app.route('/add')
+def add_page():
+    return render_template('add.html')
+
+
+@app.route('/bookmarklet')
+def bookmarklet_page():
+    return render_template('bookmarklet.html')
+
+
 # --- API Routes ---
 
 @app.route('/api/recipes', methods=['GET'])

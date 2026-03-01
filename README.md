@@ -8,6 +8,7 @@ A self-hosted recipe manager for your local network. Paste a recipe URL, and Rec
 - **Ingredient filtering** — search by one or more ingredients (AND logic, semicolon-separated)
 - **Star ratings** — rate recipes 0–5 stars
 - **Image support** — auto-scraped hero images, or upload your own (png/jpg/gif/webp, 5 MB max)
+- **Phone bookmarklet** — save recipes from your phone's browser with one tap (setup at `/bookmarklet`)
 - **Responsive layout** — 4-column grid on desktop down to single-column on mobile
 - **No account required** — designed for trusted home networks
 
@@ -35,6 +36,8 @@ database.py       SQLite schema, CRUD helpers, ingredient filtering
 scraper.py        Recipe scraping and ingredient normalization
 templates/
   index.html      Single-page app template
+  add.html        Standalone add-recipe page (bookmarklet target)
+  bookmarklet.html  Setup instructions for phone bookmarklet
 static/
   css/style.css   Responsive layout and styling
   js/app.js       SPA logic (API calls, DOM rendering)
@@ -45,6 +48,8 @@ static/
 
 | Method | Route | Purpose |
 |--------|-------|---------|
+| GET | `/add` | Standalone add page (accepts `?url=` for bookmarklet) |
+| GET | `/bookmarklet` | Bookmarklet setup instructions |
 | GET | `/api/recipes` | List all or filter (`?ingredients=chicken;garlic`) |
 | GET | `/api/recipes/<id>` | Single recipe detail |
 | POST | `/api/recipes` | Add recipe (`{"url": "..."}`) |

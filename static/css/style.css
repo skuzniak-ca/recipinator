@@ -29,6 +29,17 @@ header h1 {
     letter-spacing: 0.5px;
 }
 
+.header-link {
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    font-size: 0.9rem;
+    margin-right: 0.5rem;
+}
+
+.header-link:hover {
+    color: white;
+}
+
 /* Buttons */
 .btn {
     padding: 0.5rem 1.2rem;

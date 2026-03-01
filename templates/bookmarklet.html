@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phone Bookmarklet - Recipinator</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: #f5f0eb;
+            color: #333;
+            min-height: 100vh;
+        }
+
+        header {
+            background: #2c3e50;
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        header a {
+            color: white;
+            text-decoration: none;
+            font-size: 1.6rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .back-link {
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .back-link:hover { color: white; }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        h2 {
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+            font-size: 1.4rem;
+        }
+
+        .intro {
+            color: #666;
+            margin-bottom: 2rem;
+            line-height: 1.5;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.12);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card h3 {
+            color: #2c3e50;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.4rem;
+            border-bottom: 2px solid #e67e22;
+        }
+
+        .step {
+            display: flex;
+            gap: 0.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .step-num {
+            flex-shrink: 0;
+            width: 28px;
+            height: 28px;
+            background: #e67e22;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+
+        .step-text {
+            line-height: 1.5;
+            padding-top: 2px;
+        }
+
+        .code-box {
+            background: #2c3e50;
+            color: #e8e0d8;
+            border-radius: 6px;
+            padding: 1rem;
+            font-family: monospace;
+            font-size: 0.8rem;
+            word-break: break-all;
+            line-height: 1.4;
+            margin: 1rem 0;
+            position: relative;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 0.6rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            font-weight: 500;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+
+        .btn-primary { background: #e67e22; color: white; }
+        .btn-primary:hover { background: #d35400; }
+
+        .copy-feedback {
+            color: #27ae60;
+            font-weight: 600;
+            margin-left: 0.5rem;
+            display: none;
+        }
+
+        .alt-method {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #eee;
+        }
+
+        .alt-method p {
+            color: #666;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin-bottom: 0.5rem;
+        }
+
+        .manual-link {
+            color: #e67e22;
+            font-weight: 500;
+        }
+
+        .manual-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="/">Recipinator</a>
+        <a href="/" class="back-link">Back to recipes</a>
+    </header>
+
+    <div class="container">
+        <h2>Save Recipes from Your Phone</h2>
+        <p class="intro">
+            Add a bookmarklet to your phone's browser so you can save recipes with one tap while browsing.
+        </p>
+
+        <div class="card">
+            <h3>Setup Instructions</h3>
+
+            <div class="step">
+                <div class="step-num">1</div>
+                <div class="step-text">
+                    Bookmark this page (any page works — you'll replace the URL in the next step).
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-num">2</div>
+                <div class="step-text">
+                    Copy the bookmarklet code below:
+                </div>
+            </div>
+
+            <div class="code-box" id="bookmarklet-code"></div>
+
+            <button class="btn btn-primary" onclick="copyCode()">Copy Code</button>
+            <span class="copy-feedback" id="copy-feedback">Copied!</span>
+
+            <div class="step" style="margin-top: 1.2rem;">
+                <div class="step-num">3</div>
+                <div class="step-text">
+                    Edit the bookmark you just saved. Replace its URL with the code you copied.
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-num">4</div>
+                <div class="step-text">
+                    Give it a name like <strong>"Save Recipe"</strong>.
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>How to Use</h3>
+
+            <div class="step">
+                <div class="step-num">1</div>
+                <div class="step-text">
+                    Browse to any recipe page in your phone's browser.
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-num">2</div>
+                <div class="step-text">
+                    Open your bookmarks and tap <strong>"Save Recipe"</strong>.
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-num">3</div>
+                <div class="step-text">
+                    A new tab opens, scrapes the recipe, and confirms when it's saved.
+                </div>
+            </div>
+
+            <div class="alt-method">
+                <p>
+                    You can also add recipes manually anytime at:
+                    <a class="manual-link" id="add-link" href="/add">/add</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const origin = window.location.origin;
+        const code = "javascript:void(window.open('" + origin + "/add?url='+encodeURIComponent(location.href),'_blank'))";
+
+        document.getElementById('bookmarklet-code').textContent = code;
+        document.getElementById('add-link').href = origin + '/add';
+
+        function copyCode() {
+            navigator.clipboard.writeText(code).then(function() {
+                const feedback = document.getElementById('copy-feedback');
+                feedback.style.display = 'inline';
+                setTimeout(function() { feedback.style.display = 'none'; }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>
