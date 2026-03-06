@@ -1,0 +1,16 @@
+services:
+  recipinator:
+    build: .
+    container_name: recipinator
+    ports:
+      - "${HOST_PORT:-5000}:5000"
+    volumes:
+      - recipinator_db:/app/data
+      - recipinator_uploads:/app/static/uploads
+    environment:
+      - DB_PATH=/app/data/recipinator.db
+    restart: unless-stopped
+
+volumes:
+  recipinator_db:
+  recipinator_uploads:

@@ -1,0 +1,12 @@
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.git/
+.gitignore
+recipinator.db
+static/uploads/*
+!static/uploads/.gitkeep
+*.md
+*.log
+.env
