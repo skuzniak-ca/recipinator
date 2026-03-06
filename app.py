@@ -1,11 +1,71 @@
 import os
+import time
+import threading
 import uuid
-from flask import Flask, request, jsonify, render_template, send_from_directory
+from urllib.parse import urlparse
+from flask import Flask, request, jsonify, render_template
 from database import init_db, add_recipe, get_all_recipes, get_recipe, \
     update_rating, update_image, filter_recipes, delete_recipe, get_all_ingredient_names
-from scraper import scrape_recipe, download_image
+from scraper import scrape_recipe, download_image, _validate_image_content
 
 app = Flask(__name__)
+
+
+@app.before_request
+def csrf_check():
+    """Block cross-origin mutating requests (CSRF protection)."""
+    if request.method in ('POST', 'PUT', 'DELETE'):
+        origin = request.headers.get('Origin')
+        referer = request.headers.get('Referer')
+        if origin:
+            allowed = request.host_url.rstrip('/')
+            if origin != allowed:
+                return jsonify({'error': 'Cross-origin request blocked.'}), 403
+        elif referer:
+            ref_origin = f"{urlparse(referer).scheme}://{urlparse(referer).netloc}"
+            allowed = request.host_url.rstrip('/')
+            if ref_origin != allowed:
+                return jsonify({'error': 'Cross-origin request blocked.'}), 403
+
+
+@app.after_request
+def security_headers(response):
+    """Add security headers to all responses."""
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'DENY'
+    response.headers['X-XSS-Protection'] = '1; mode=block'
+    response.headers['Content-Security-Policy'] = (
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline'; "
+        "style-src 'self' 'unsafe-inline'; "
+        "img-src 'self' data:; "
+        "frame-ancestors 'none'"
+    )
+    return response
+
+
+# Rate limiter for scraping endpoint: max 2 requests per 10 seconds per IP
+_scrape_timestamps = {}  # {ip: [timestamp, ...]}
+_scrape_lock = threading.Lock()
+SCRAPE_RATE_LIMIT = 2
+SCRAPE_RATE_WINDOW = 10  # seconds
+
+
+def _check_scrape_rate_limit():
+    """Return True if the request should be rate-limited."""
+    ip = request.remote_addr
+    now = time.monotonic()
+    with _scrape_lock:
+        timestamps = _scrape_timestamps.get(ip, [])
+        # Remove timestamps outside the window
+        timestamps = [t for t in timestamps if now - t < SCRAPE_RATE_WINDOW]
+        if len(timestamps) >= SCRAPE_RATE_LIMIT:
+            _scrape_timestamps[ip] = timestamps
+            return True
+        timestamps.append(now)
+        _scrape_timestamps[ip] = timestamps
+        return False
+
 
 UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'uploads')
 MAX_IMAGE_SIZE = 5 * 1024 * 1024  # 5MB
@@ -58,6 +118,9 @@ def api_get_recipe(recipe_id):
 
 @app.route('/api/recipes', methods=['POST'])
 def api_add_recipe():
+    if _check_scrape_rate_limit():
+        return jsonify({'error': 'Too many requests. Please wait a moment before adding another recipe.'}), 429
+
     data = request.get_json()
     if not data or 'url' not in data:
         return jsonify({'error': 'URL is required'}), 400
@@ -129,15 +192,21 @@ def api_upload_image(recipe_id):
     if size > MAX_IMAGE_SIZE:
         return jsonify({'error': 'Image too large. Maximum size is 5MB.'}), 400
 
+    # Validate actual file content via magic bytes
+    file_header = file.read(12)
+    file.seek(0)
+    validated_ext = _validate_image_content(file_header)
+    if not validated_ext:
+        return jsonify({'error': 'File does not appear to be a valid image.'}), 400
+
     # Delete old image if exists
     if recipe['image_filename']:
         old_path = os.path.join(UPLOAD_FOLDER, recipe['image_filename'])
         if os.path.exists(old_path):
             os.remove(old_path)
 
-    # Save with unique filename
-    ext = file.filename.rsplit('.', 1)[1].lower()
-    filename = f"{uuid.uuid4().hex}.{ext}"
+    # Save with unique filename using validated extension
+    filename = f"{uuid.uuid4().hex}.{validated_ext}"
     file.save(os.path.join(UPLOAD_FOLDER, filename))
 
     update_image(recipe_id, filename)

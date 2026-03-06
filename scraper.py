@@ -3,8 +3,40 @@ import re
 import json
 import html
 import uuid
+import socket
+import ipaddress
+import logging
+from urllib.parse import urlparse
 import requests
 from bs4 import BeautifulSoup
+
+logger = logging.getLogger(__name__)
+
+def _validate_url(url):
+    """Validate that a URL is safe to fetch (not targeting internal services).
+
+    Raises ValueError if the URL is invalid, uses a non-HTTP scheme,
+    or resolves to a private/loopback/link-local IP address.
+    """
+    parsed = urlparse(url)
+    if parsed.scheme not in ('http', 'https'):
+        raise ValueError("Only HTTP and HTTPS URLs are allowed.")
+
+    hostname = parsed.hostname
+    if not hostname:
+        raise ValueError("Invalid URL: no hostname found.")
+
+    # Resolve hostname to IP and check against private ranges
+    try:
+        addr_info = socket.getaddrinfo(hostname, None, socket.AF_UNSPEC, socket.SOCK_STREAM)
+    except socket.gaierror:
+        raise ValueError("Could not resolve hostname.")
+
+    for family, _, _, _, sockaddr in addr_info:
+        ip = ipaddress.ip_address(sockaddr[0])
+        if ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved:
+            raise ValueError("URLs pointing to internal or private networks are not allowed.")
+
 
 # Units and measurements to strip from ingredient text
 UNITS = {
@@ -307,16 +339,29 @@ def scrape_recipe(url):
     Raises:
         ValueError: If scraping fails or no recipe data found
     """
+    _validate_url(url)
+
     headers = {
         'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 '
                        '(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
     }
 
     try:
-        response = requests.get(url, headers=headers, timeout=15)
+        response = requests.get(url, headers=headers, timeout=15, allow_redirects=False)
+        # Handle redirects manually to validate each target
+        redirect_count = 0
+        while response.is_redirect and redirect_count < 5:
+            redirect_url = response.headers.get('Location', '')
+            if redirect_url:
+                _validate_url(redirect_url)
+            response = requests.get(redirect_url, headers=headers, timeout=15, allow_redirects=False)
+            redirect_count += 1
         response.raise_for_status()
+    except ValueError:
+        raise
     except requests.RequestException as e:
-        raise ValueError(f"Failed to fetch URL: {e}")
+        logger.warning("Failed to fetch recipe URL: %s", e)
+        raise ValueError("Failed to fetch URL. The site may be unavailable or blocking requests.")
 
     soup = BeautifulSoup(response.text, 'lxml')
 
@@ -368,6 +413,23 @@ def scrape_recipe(url):
     }
 
 
+def _validate_image_content(data):
+    """Validate image data by checking magic bytes. Returns file extension or None."""
+    signatures = {
+        b'\xff\xd8\xff': 'jpg',
+        b'\x89PNG\r\n\x1a\n': 'png',
+        b'GIF87a': 'gif',
+        b'GIF89a': 'gif',
+    }
+    for sig, ext in signatures.items():
+        if data[:len(sig)] == sig:
+            return ext
+    # WebP: starts with RIFF....WEBP
+    if data[:4] == b'RIFF' and data[8:12] == b'WEBP':
+        return 'webp'
+    return None
+
+
 def download_image(image_url, save_dir):
     """Download an image from a URL and save it locally.
 
@@ -382,6 +444,8 @@ def download_image(image_url, save_dir):
         image_url = 'https:' + image_url
 
     try:
+        _validate_url(image_url)
+
         headers = {
             'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 '
                            '(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
@@ -389,26 +453,14 @@ def download_image(image_url, save_dir):
         response = requests.get(image_url, headers=headers, timeout=10)
         response.raise_for_status()
 
-        content_type = response.headers.get('Content-Type', '').split(';')[0].strip()
-        ext_map = {
-            'image/jpeg': 'jpg',
-            'image/png': 'png',
-            'image/gif': 'gif',
-            'image/webp': 'webp',
-        }
-        ext = ext_map.get(content_type)
-        if not ext:
-            # Try to infer from URL path
-            url_path = image_url.split('?')[0].lower()
-            for check_ext in ('jpg', 'jpeg', 'png', 'gif', 'webp'):
-                if url_path.endswith('.' + check_ext):
-                    ext = 'jpg' if check_ext == 'jpeg' else check_ext
-                    break
-            if not ext:
-                ext = 'jpg'
-
         # Enforce 5MB size limit
         if len(response.content) > 5 * 1024 * 1024:
+            return None
+
+        # Validate actual image content via magic bytes
+        ext = _validate_image_content(response.content)
+        if not ext:
+            logger.warning("Downloaded file is not a valid image: %s", image_url)
             return None
 
         filename = f"{uuid.uuid4().hex}.{ext}"
