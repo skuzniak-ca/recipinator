@@ -1,6 +1,6 @@
 # Recipinator
 
-Recipinator is a locally hosted recipe database that runs on your local network. You can paste a recipe URL (like from a food blog, or a recipe website), and Recipinator will scrape the ingredients and instructions automatically. You can browse and filter your stored recipes tile-based UI.
+Recipinator is a locally hosted recipe database that runs on your local network. You can paste a recipe URL (like from a food blog, or a recipe website), and Recipinator will scrape the ingredients and instructions automatically. You can browse and filter your stored recipes tile-based UI. This was originally created because my wife loves food blogs, but has trouble keeping track of recipes, and when she would bookmark them, they would often disappear from the internet at some point.
 
 ## Features
 
@@ -14,9 +14,26 @@ Recipinator is a locally hosted recipe database that runs on your local network.
 
 ## Tech Stack
 
-Flask · SQLite · vanilla HTML/CSS/JS (no frontend framework)
+Flask · SQLite · Gunicorn · Docker · vanilla HTML/CSS/JS (no frontend framework)
 
 ## Quick Start
+
+### Docker (recommended)
+
+```bash
+git clone <repo-url> && cd recipinator
+docker compose up -d
+```
+
+Data (database and uploaded images) is persisted in Docker named volumes.
+
+To change the host port, set `HOST_PORT` before starting:
+
+```bash
+HOST_PORT=8080 docker compose up -d
+```
+
+### Manual
 
 ```bash
 git clone <repo-url> && cd recipinator
@@ -26,22 +43,25 @@ pip install -r requirements.txt
 python3 app.py
 ```
 
-Open `http://localhost:5000` (or `http://<your-lan-ip>:5000` from other devices).
+Open `http://localhost:5000` (or `http://<your-lan-ip>:5000` from other devices on the same network).
 
 ## Project Structure
 
 ```
-app.py            Flask routes and image upload handling
-database.py       SQLite schema, CRUD helpers, ingredient filtering
-scraper.py        Recipe scraping and ingredient normalization
+app.py              Flask routes, security middleware, image upload handling
+database.py         SQLite schema, CRUD helpers, ingredient filtering
+scraper.py          Recipe scraping, ingredient normalization, URL validation
+Dockerfile          Container image (Python 3.12-slim, gunicorn)
+docker-compose.yml  Service config with named volumes for DB and uploads
+.dockerignore       Files excluded from Docker build context
 templates/
-  index.html      Single-page app template
-  add.html        Standalone add-recipe page (bookmarklet target)
+  index.html        Single-page app template
+  add.html          Standalone add-recipe page (bookmarklet target)
   bookmarklet.html  Setup instructions for bookmarklet
 static/
-  css/style.css   Responsive layout and styling
-  js/app.js       SPA logic (API calls, DOM rendering)
-  uploads/        User-uploaded images (gitignored)
+  css/style.css     Responsive layout and styling
+  js/app.js         SPA logic (API calls, DOM rendering)
+  uploads/          User-uploaded images (gitignored)
 ```
 
 ## API
