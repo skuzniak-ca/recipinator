@@ -1,14 +1,14 @@
 # Recipinator
 
-A self-hosted recipe manager for your local network. Paste a recipe URL, and Recipinator scrapes the ingredients and instructions automatically. Browse your collection in a responsive tile-based UI.
+Recipinator is a locally hosted recipe database that runs on your local network. You can paste a recipe URL (like from a food blog, or a recipe website), and Recipinator will scrape the ingredients and instructions automatically. You can browse and filter your stored recipes tile-based UI.
 
 ## Features
 
 - **URL scraping** — paste a link and the app extracts title, ingredients, instructions, and hero image (JSON-LD first, HTML fallback)
-- **Ingredient filtering** — search by one or more ingredients (AND logic, semicolon-separated)
+- **Ingredient filtering** — search by one or more ingredients (AND logic, semicolon-separated; eg, a search for chicken;cheese will return recipes that have ingredients of chicken AND cheese)
 - **Star ratings** — rate recipes 0–5 stars
 - **Image support** — auto-scraped hero images, or upload your own (png/jpg/gif/webp, 5 MB max)
-- **Bookmarklet** — save recipes from your browser with one tap (setup at `/bookmarklet`)
+- **Bookmarklet** — save recipes from your browser with one tap (setup for your browser at `/bookmarklet`)
 - **Responsive layout** — 4-column grid on desktop down to single-column on mobile
 - **No account required** — designed for trusted home networks
 
