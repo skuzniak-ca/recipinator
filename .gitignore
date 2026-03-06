@@ -5,3 +5,5 @@ recipinator.db
 static/uploads/*
 !static/uploads/.gitkeep
 *.log
+CLAUDE.md
+MEMORY.md
