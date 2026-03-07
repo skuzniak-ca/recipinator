@@ -78,3 +78,8 @@ static/
 | DELETE | `/api/recipes/<id>/image` | Remove image |
 | DELETE | `/api/recipes/<id>` | Delete recipe |
 | GET | `/api/ingredients` | Unique ingredient names (for autocomplete) |
+
+
+## Acknowledgements
+
+Built with assistance from [Claude](https://claude.ai) by Anthropic.
