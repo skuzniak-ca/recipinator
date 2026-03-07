@@ -10,7 +10,7 @@ Recipinator is a locally hosted recipe database that runs on your local network.
 - **Image support** — auto-scraped hero images, or upload your own (png/jpg/gif/webp, 5 MB max)
 - **Bookmarklet** — save recipes from your browser with one tap (setup for your browser at `/bookmarklet`)
 - **Responsive layout** — 4-column grid on desktop down to single-column on mobile
-- **No account required** — designed for trusted home networks
+- **No account required** — designed for trusted home networks - there is no authentication by design!
 
 ## Tech Stack
 
@@ -43,7 +43,7 @@ pip install -r requirements.txt
 python3 app.py
 ```
 
-Open `http://localhost:5000` (or `http://<your-lan-ip>:5000` from other devices on the same network).
+Open `http://localhost:5000` (or `http://<your-lan-ip>:5000` from other devices on the same network). Replace with your selected port if you specified a different value.
 
 ## Project Structure
 
