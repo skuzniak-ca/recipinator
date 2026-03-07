@@ -1,6 +1,6 @@
 # Recipinator
 
-Recipinator is a locally hosted recipe database that runs on your local network. You can paste a recipe URL (like from a food blog, or a recipe website), and Recipinator will scrape the ingredients and instructions automatically. You can browse and filter your stored recipes tile-based UI. This was originally created because my wife loves food blogs, but has trouble keeping track of recipes, and when she would bookmark them, they would often disappear from the internet at some point.
+Recipinator is a locally hosted recipe database that runs on your local network. You can paste a recipe URL (like from a food blog, or a recipe website), and Recipinator will scrape the ingredients and instructions automatically. You can browse and filter your stored recipes in a tile-based UI. This was originally created because my wife loves food blogs, but has trouble keeping track of recipes, and when she would bookmark them, they would often disappear from the internet at some point.
 
 ## Features
 
