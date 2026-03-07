@@ -21,7 +21,8 @@ Flask · SQLite · Gunicorn · Docker · vanilla HTML/CSS/JS (no frontend framew
 ### Docker (recommended)
 
 ```bash
-git clone <repo-url> && cd recipinator
+git clone https://github.com/skuzniak-ca/recipinator.git 
+cd recipinator
 docker compose up -d
 ```
 
@@ -36,7 +37,8 @@ HOST_PORT=8080 docker compose up -d
 ### Manual
 
 ```bash
-git clone <repo-url> && cd recipinator
+git clone https://github.com/skuzniak-ca/recipinator.git
+cd recipinator
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
