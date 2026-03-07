@@ -29,6 +29,32 @@ const imageUploadInput = document.getElementById('image-upload-input');
 const btnRemoveImage = document.getElementById('btn-remove-image');
 const btnDeleteRecipe = document.getElementById('btn-delete-recipe');
 
+// --- Formatting helpers ---
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function formatInstructions(text) {
+    const escaped = escapeHtml(text);
+    // Try splitting on newlines first
+    let lines = escaped.split('\n').filter(l => l.trim());
+    // If it's a single block, try splitting on numbered step patterns ("1. ..., 2. ...")
+    if (lines.length <= 1) {
+        const steps = escaped.split(/(?<=\s)(?=\d+\.\s)/).filter(s => s.trim());
+        if (steps.length > 1) lines = steps;
+    }
+    // Render as ordered list if lines look numbered
+    const isNumbered = lines.length > 1 && lines.every(l => /^\d+\.\s/.test(l.trim()));
+    if (isNumbered) {
+        const items = lines.map(l => `<li>${l.replace(/^\d+\.\s*/, '').trim()}</li>`).join('');
+        return `<ol>${items}</ol>`;
+    }
+    // Fall back to paragraph breaks
+    return lines.map(l => `<p>${l}</p>`).join('');
+}
+
 // --- API helpers ---
 async function api(url, options = {}) {
     const res = await fetch(url, options);
@@ -174,7 +200,7 @@ function openDetail(recipeId) {
     });
 
     // Instructions
-    detailInstructionsText.textContent = recipe.instructions || 'No instructions available.';
+    detailInstructionsText.innerHTML = formatInstructions(recipe.instructions || 'No instructions available.');
 
     modalDetail.style.display = 'flex';
 }
@@ -313,6 +339,9 @@ detailStars.querySelectorAll('.star').forEach(star => {
 });
 
 // Image upload
+document.getElementById('btn-upload-image').addEventListener('click', () => {
+    imageUploadInput.click();
+});
 imageUploadInput.addEventListener('change', e => {
     if (e.target.files.length > 0) {
         uploadImage(e.target.files[0]);

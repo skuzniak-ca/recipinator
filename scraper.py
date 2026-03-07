@@ -101,7 +101,8 @@ def normalize_ingredient(raw_text):
     words = text.split()
     filtered = []
     for word in words:
-        word_clean = word.strip('.,;:!?')
+        word_clean = word.strip('.,;:!?*)(')
+
         if not word_clean:
             continue
         if word_clean in UNITS:
@@ -483,6 +484,8 @@ def _clean_text(text):
     text = re.sub(r'\s*\(\s*\$\d+(?:\.\d{1,2})?\s*\)', '', text)
     # Also strip standalone prices not in parens: $0.42
     text = re.sub(r'\s*\$\d+(?:\.\d{1,2})?', '', text)
+    # Strip footnote markers (asterisks)
+    text = re.sub(r'\*+', '', text)
     # Clean up trailing commas and empty parens left after stripping
     text = re.sub(r',\s*\)', ')', text)
     text = re.sub(r'\(\s*\)', '', text)

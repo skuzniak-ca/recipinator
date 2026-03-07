@@ -4,13 +4,13 @@ Recipinator is a locally hosted recipe database that runs on your local network.
 
 ## Features
 
-- **URL scraping** — paste a link and the app extracts title, ingredients, instructions, and hero image (JSON-LD first, HTML fallback)
-- **Ingredient filtering** — search by one or more ingredients (AND logic, semicolon-separated; eg, a search for chicken;cheese will return recipes that have ingredients of chicken AND cheese)
-- **Star ratings** — rate recipes 0–5 stars
-- **Image support** — auto-scraped hero images, or upload your own (png/jpg/gif/webp, 5 MB max)
-- **Bookmarklet** — save recipes from your browser with one tap (setup for your browser at `/bookmarklet`)
-- **Responsive layout** — 4-column grid on desktop down to single-column on mobile
-- **No account required** — designed for trusted home networks - there is no authentication by design!
+- **URL scraping** - paste a link and the app extracts title, ingredients, instructions, and hero image (JSON-LD first, HTML fallback)
+- **Ingredient filtering** - search by one or more ingredients (AND logic, semicolon-separated; eg, a search for chicken;cheese will return recipes that have ingredients of chicken AND cheese)
+- **Star ratings** - rate recipes 0–5 stars
+- **Image support** - auto-scraped hero images, or upload your own (png/jpg/gif/webp, 5 MB max)
+- **Bookmarklet** - save recipes from your browser with one tap (setup for your browser at `/bookmarklet`)
+- **Responsive layout** - 4-column grid on desktop down to single-column on mobile
+- **No account required** - designed for trusted home networks - there is no authentication by design!
 
 ## Tech Stack
 

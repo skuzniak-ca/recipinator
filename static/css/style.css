@@ -348,6 +348,10 @@ header h1 {
     gap: 0.5rem;
 }
 
+.image-upload .btn {
+    flex: 1;
+}
+
 .detail-meta {
     flex: 1;
     display: flex;
@@ -437,9 +441,18 @@ header h1 {
     font-weight: 500;
 }
 
-.detail-instructions-text {
+.detail-instructions ol {
+    padding-left: 1.5rem;
     line-height: 1.7;
-    white-space: pre-wrap;
+}
+
+.detail-instructions ol li {
+    margin-bottom: 0.5rem;
+}
+
+.detail-instructions p {
+    line-height: 1.7;
+    margin-bottom: 0.5rem;
 }
 
 /* Responsive: Tablet */
