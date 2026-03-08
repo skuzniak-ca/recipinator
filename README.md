@@ -26,6 +26,8 @@ cd recipinator
 docker compose up -d
 ```
 
+Or use the docker-compose.yml file to pull and build.
+
 Data (database and uploaded images) is persisted in Docker named volumes.
 
 To change the host port, set `HOST_PORT` before starting:
