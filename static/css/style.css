@@ -140,6 +140,7 @@ header h1 {
     cursor: pointer;
     font-size: 0.9rem;
     color: #333;
+    text-align: left;
 }
 
 .autocomplete-item:hover,
@@ -150,6 +151,7 @@ header h1 {
 .autocomplete-item input[type="checkbox"] {
     accent-color: #e67e22;
     cursor: pointer;
+    flex-shrink: 0;
 }
 
 /* Selected Ingredient Chips */
