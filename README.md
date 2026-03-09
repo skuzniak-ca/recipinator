@@ -52,20 +52,24 @@ Open `http://localhost:5000` (or `http://<your-lan-ip>:5000` from other devices 
 ## Project Structure
 
 ```
-app.py              Flask routes, security middleware, image upload handling
-database.py         SQLite schema, CRUD helpers, ingredient filtering
-scraper.py          Recipe scraping, ingredient normalization, URL validation
-Dockerfile          Container image (Python 3.12-slim, gunicorn)
-docker-compose.yml  Service config with named volumes for DB and uploads
-.dockerignore       Files excluded from Docker build context
-templates/
-  index.html        Single-page app template
-  add.html          Standalone add-recipe page (bookmarklet target)
-  bookmarklet.html  Setup instructions for bookmarklet
-static/
-  css/style.css     Responsive layout and styling
-  js/app.js         SPA logic (API calls, DOM rendering)
-  uploads/          User-uploaded images (gitignored)
+├── app.py                  # Flask routes, security middleware, image upload handling
+├── database.py             # SQLite schema, CRUD helpers, ingredient filtering
+├── scraper.py              # Recipe scraping, ingredient normalization, URL validation
+├── requirements.txt        # Python dependencies
+├── Dockerfile              # Container image (Python 3.12-slim, gunicorn)
+├── docker-compose.yml      # Service config with named volumes for DB and uploads
+├── entrypoint.sh           # Container entrypoint (permissions setup)
+├── .dockerignore           # Files excluded from Docker build context
+├── templates/
+│   ├── index.html          # Single-page app template
+│   ├── add.html            # Standalone add-recipe page (bookmarklet target)
+│   └── bookmarklet.html    # Setup instructions for bookmarklet
+└── static/
+    ├── css/
+    │   └── style.css       # Responsive layout and styling
+    ├── js/
+    │   └── app.js          # SPA logic (API calls, DOM rendering)
+    └── uploads/            # User-uploaded images (gitignored)
 ```
 
 ## API
