@@ -359,13 +359,13 @@ function updateAutocomplete() {
     highlightedIndex = -1;
     autocompleteDropdown.innerHTML = '';
     matches.forEach((name, i) => {
-        const item = document.createElement('label');
+        const item = document.createElement('div');
         item.className = 'autocomplete-item';
-        item.innerHTML = `<input type="checkbox" data-name="${escapeHtml(name)}"> ${escapeHtml(name)}`;
+        item.innerHTML = `<input type="checkbox" data-name="${escapeHtml(name)}"><span>${escapeHtml(name)}</span>`;
         item.addEventListener('mousedown', e => {
             e.preventDefault(); // prevent input blur
-        });
-        item.querySelector('input').addEventListener('change', () => {
+            const cb = item.querySelector('input');
+            cb.checked = !cb.checked;
             addIngredient(name);
         });
         autocompleteDropdown.appendChild(item);
