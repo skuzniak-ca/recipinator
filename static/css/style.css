@@ -96,7 +96,7 @@ header h1 {
     margin: 0 auto;
 }
 
-.filter-input-wrapper input {
+.filter-input-wrapper input[type="text"] {
     width: 100%;
     padding: 0.6rem 1rem;
     border: 2px solid #ddd;
@@ -105,7 +105,7 @@ header h1 {
     transition: border-color 0.2s;
 }
 
-.filter-input-wrapper input:focus {
+.filter-input-wrapper input[type="text"]:focus {
     outline: none;
     border-color: #e67e22;
 }
