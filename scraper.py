@@ -58,6 +58,8 @@ PREP_WORDS = {
     'drained', 'rinsed', 'cooked', 'uncooked', 'raw', 'dried', 'canned',
     'packed', 'sifted', 'beaten', 'divided', 'optional',
     'finely', 'roughly', 'thinly', 'coarsely', 'freshly',
+    'sprinkling', 'drizzling', 'topping', 'coating',
+    'coarse', 'fine', 'light', 'dark',
 }
 
 # Filler/size words to strip
@@ -66,6 +68,7 @@ FILLER_WORDS = {
     'plus', 'more', 'for', 'serving', 'garnish', 'or', 'whole', 'bone-in',
     'boneless', 'skinless', 'skin-on', 'thick', 'thin', 'warm', 'cold', 'hot',
     'room', 'temperature', 'store-bought', 'homemade',
+    'additional', 'remaining', 'needed', 'good', 'quality',
 }
 
 
@@ -390,6 +393,16 @@ def scrape_recipe(url):
 
     # Clean up raw data
     result['ingredients_raw'] = [_clean_text(r) for r in result['ingredients_raw']]
+
+    # Expand alternatives: "avocado oil or vegetable oil or canola oil" -> 3 entries
+    expanded = []
+    for raw in result['ingredients_raw']:
+        parts = re.split(r'\s+or\s+', raw)
+        if len(parts) > 1:
+            expanded.extend(parts)
+        else:
+            expanded.append(raw)
+    result['ingredients_raw'] = expanded
     result['instructions'] = _clean_text(result['instructions'])
     result['title'] = _clean_text(result['title'])
 

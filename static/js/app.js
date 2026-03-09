@@ -2,13 +2,16 @@
 let allRecipes = [];
 let currentRecipeId = null;
 let knownIngredients = [];
+let selectedIngredients = [];
+let highlightedIndex = -1;
 
 // --- DOM refs ---
 const grid = document.getElementById('recipe-grid');
 const emptyState = document.getElementById('empty-state');
 const filterInput = document.getElementById('filter-input');
-const btnFilter = document.getElementById('btn-filter');
 const btnClearFilter = document.getElementById('btn-clear-filter');
+const autocompleteDropdown = document.getElementById('autocomplete-dropdown');
+const selectedIngredientsContainer = document.getElementById('selected-ingredients');
 const btnAddRecipe = document.getElementById('btn-add-recipe');
 
 const modalAdd = document.getElementById('modal-add');
@@ -294,21 +297,109 @@ async function deleteRecipe() {
 }
 
 // --- Filter ---
-function applyFilter() {
-    const value = filterInput.value.trim();
-    if (value) {
-        btnClearFilter.style.display = 'inline-block';
-        loadRecipes(value);
-    }
+function triggerFilter() {
+    const filterString = selectedIngredients.join(';');
+    btnClearFilter.style.display = selectedIngredients.length ? 'inline-block' : 'none';
+    loadRecipes(filterString);
 }
 
 function clearFilter() {
+    selectedIngredients = [];
     filterInput.value = '';
+    renderChips();
+    hideDropdown();
     btnClearFilter.style.display = 'none';
     loadRecipes();
 }
 
-// --- Ingredients Autocomplete ---
+function addIngredient(name) {
+    if (!selectedIngredients.includes(name)) {
+        selectedIngredients.push(name);
+        renderChips();
+        triggerFilter();
+    }
+    filterInput.value = '';
+    hideDropdown();
+}
+
+function removeIngredient(name) {
+    selectedIngredients = selectedIngredients.filter(n => n !== name);
+    renderChips();
+    triggerFilter();
+}
+
+function renderChips() {
+    selectedIngredientsContainer.innerHTML = '';
+    selectedIngredients.forEach(name => {
+        const chip = document.createElement('span');
+        chip.className = 'ingredient-chip';
+        chip.innerHTML = `${escapeHtml(name)}<span class="chip-remove">&times;</span>`;
+        chip.querySelector('.chip-remove').addEventListener('click', () => removeIngredient(name));
+        selectedIngredientsContainer.appendChild(chip);
+    });
+}
+
+// --- Autocomplete ---
+function updateAutocomplete() {
+    const query = filterInput.value.trim().toLowerCase();
+    if (!query) {
+        hideDropdown();
+        return;
+    }
+
+    const matches = knownIngredients
+        .filter(name => name.includes(query) && !selectedIngredients.includes(name))
+        .slice(0, 15);
+
+    if (matches.length === 0) {
+        hideDropdown();
+        return;
+    }
+
+    highlightedIndex = -1;
+    autocompleteDropdown.innerHTML = '';
+    matches.forEach((name, i) => {
+        const item = document.createElement('label');
+        item.className = 'autocomplete-item';
+        item.innerHTML = `<input type="checkbox" data-name="${escapeHtml(name)}"> ${escapeHtml(name)}`;
+        item.addEventListener('mousedown', e => {
+            e.preventDefault(); // prevent input blur
+        });
+        item.querySelector('input').addEventListener('change', () => {
+            addIngredient(name);
+        });
+        autocompleteDropdown.appendChild(item);
+    });
+    autocompleteDropdown.style.display = 'block';
+}
+
+function hideDropdown() {
+    autocompleteDropdown.style.display = 'none';
+    highlightedIndex = -1;
+}
+
+function navigateDropdown(direction) {
+    const items = autocompleteDropdown.querySelectorAll('.autocomplete-item');
+    if (items.length === 0) return;
+
+    items.forEach(item => item.classList.remove('highlighted'));
+    highlightedIndex += direction;
+    if (highlightedIndex < 0) highlightedIndex = items.length - 1;
+    if (highlightedIndex >= items.length) highlightedIndex = 0;
+
+    items[highlightedIndex].classList.add('highlighted');
+    items[highlightedIndex].scrollIntoView({ block: 'nearest' });
+}
+
+function selectHighlighted() {
+    const items = autocompleteDropdown.querySelectorAll('.autocomplete-item');
+    if (highlightedIndex >= 0 && highlightedIndex < items.length) {
+        const name = items[highlightedIndex].querySelector('input').dataset.name;
+        addIngredient(name);
+    }
+}
+
+// --- Ingredients ---
 async function loadIngredients() {
     knownIngredients = await api('/api/ingredients');
 }
@@ -316,7 +407,6 @@ async function loadIngredients() {
 // --- Event Listeners ---
 btnAddRecipe.addEventListener('click', openAddModal);
 btnSubmitRecipe.addEventListener('click', submitRecipe);
-btnFilter.addEventListener('click', applyFilter);
 btnClearFilter.addEventListener('click', clearFilter);
 btnRemoveImage.addEventListener('click', removeImage);
 btnDeleteRecipe.addEventListener('click', deleteRecipe);
@@ -326,9 +416,27 @@ recipeUrlInput.addEventListener('keydown', e => {
     if (e.key === 'Enter') submitRecipe();
 });
 
-// Enter key in filter input
+// Autocomplete input events
+filterInput.addEventListener('input', updateAutocomplete);
+filterInput.addEventListener('focus', updateAutocomplete);
+filterInput.addEventListener('blur', () => {
+    // Small delay so click events on dropdown items fire first
+    setTimeout(hideDropdown, 150);
+});
 filterInput.addEventListener('keydown', e => {
-    if (e.key === 'Enter') applyFilter();
+    const isOpen = autocompleteDropdown.style.display === 'block';
+    if (e.key === 'ArrowDown' && isOpen) {
+        e.preventDefault();
+        navigateDropdown(1);
+    } else if (e.key === 'ArrowUp' && isOpen) {
+        e.preventDefault();
+        navigateDropdown(-1);
+    } else if (e.key === 'Enter' && isOpen && highlightedIndex >= 0) {
+        e.preventDefault();
+        selectHighlighted();
+    } else if (e.key === 'Escape' && isOpen) {
+        hideDropdown();
+    }
 });
 
 // Stars click

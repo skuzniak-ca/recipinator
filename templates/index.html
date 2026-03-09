@@ -17,10 +17,13 @@
 
     <div class="filter-bar">
         <div class="filter-input-wrapper">
-            <input type="text" id="filter-input" placeholder="Filter by ingredients (semicolon-separated, e.g. chicken; garlic)">
-            <button id="btn-filter" class="btn">Filter</button>
-            <button id="btn-clear-filter" class="btn btn-secondary" style="display:none;">Clear</button>
+            <div class="autocomplete-wrapper">
+                <input type="text" id="filter-input" placeholder="Search ingredients..." autocomplete="off">
+                <div id="autocomplete-dropdown" class="autocomplete-dropdown"></div>
+            </div>
+            <button id="btn-clear-filter" class="btn btn-secondary" style="display:none;">Clear All</button>
         </div>
+        <div id="selected-ingredients" class="selected-ingredients"></div>
     </div>
 
     <main id="recipe-grid" class="recipe-grid">
