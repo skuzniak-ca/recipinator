@@ -16,7 +16,7 @@ Recipinator is a locally hosted recipe database that runs on your local network.
 
 Flask · SQLite · Gunicorn · Docker · vanilla HTML/CSS/JS (no frontend framework)
 
-## Quick Start
+## Getting Started
 
 ### Docker (recommended)
 
