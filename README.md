@@ -20,7 +20,7 @@ Paste a recipe URL into Recipinator and it scrapes the page for structured recip
 
 Flask · SQLite · Gunicorn · Docker · vanilla HTML/CSS/JS (no frontend framework)
 
-## Getting Started
+# Getting Started
 
 ### Docker (recommended)
 
