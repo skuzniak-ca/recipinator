@@ -2,10 +2,14 @@
 
 Recipinator is a locally hosted recipe database that runs on your local network. You can paste a recipe URL (like from a food blog, or a recipe website), and Recipinator will scrape the ingredients and instructions automatically. You can browse and filter your stored recipes in a tile-based UI. This was originally created because my wife loves food blogs, but has trouble keeping track of recipes, and when she would bookmark them, they would often disappear from the internet at some point.
 
+## How It Works
+
+Paste a recipe URL into Recipinator and it scrapes the page for structured recipe data (JSON-LD first, falling back to HTML parsing). Ingredients are normalized and stored in SQLite, making them searchable across your collection. Browse recipes in a tile-based grid, filter by ingredients, and rate your favorites.
+
 ## Features
 
 - **URL scraping** - paste a link and the app extracts title, ingredients, instructions, and hero image (JSON-LD first, HTML fallback)
-- **Ingredient filtering** - search by one or more ingredients (AND logic, semicolon-separated; eg, a search for chicken;cheese will return recipes that have ingredients of chicken AND cheese)
+- **Ingredient filtering** - search by one or more ingredients using an autocomplete dropdown with checkboxes (AND logic; selecting chicken and cheese returns recipes containing both)
 - **Star ratings** - rate recipes 0–5 stars
 - **Image support** - auto-scraped hero images, or upload your own (png/jpg/gif/webp, 5 MB max)
 - **Bookmarklet** - save recipes from your browser with one tap (setup for your browser at `/bookmarklet`)
@@ -52,6 +56,7 @@ Open `http://localhost:5000` (or `http://<your-lan-ip>:5000` from other devices 
 ## Project Structure
 
 ```
+recipinator/
 ├── app.py                  # Flask routes, security middleware, image upload handling
 ├── database.py             # SQLite schema, CRUD helpers, ingredient filtering
 ├── scraper.py              # Recipe scraping, ingredient normalization, URL validation
