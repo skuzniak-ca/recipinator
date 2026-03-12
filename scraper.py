@@ -141,16 +141,19 @@ def _try_json_ld(soup):
         # Handle list of items
         if isinstance(data, list):
             for item in data:
-                if isinstance(item, dict) and item.get('@type') in ('Recipe', ['Recipe']):
-                    data = item
-                    break
+                if isinstance(item, dict):
+                    t = item.get('@type') or item.get('type', '')
+                    if t in ('Recipe', ['Recipe']):
+                        data = item
+                        break
             else:
                 continue
 
         if not isinstance(data, dict):
             continue
 
-        schema_type = data.get('@type', '')
+        # Some sites use 'type' instead of '@type'
+        schema_type = data.get('@type') or data.get('type', '')
         if isinstance(schema_type, list):
             schema_type = schema_type[0] if schema_type else ''
 
@@ -193,9 +196,11 @@ def _parse_instructions(instructions_data):
             if isinstance(item, str):
                 steps.append(item)
             elif isinstance(item, dict):
-                if item.get('@type') == 'HowToStep':
+                # Some sites use 'type' instead of '@type'
+                item_type = item.get('@type') or item.get('type', '')
+                if item_type == 'HowToStep':
                     steps.append(item.get('text', ''))
-                elif item.get('@type') == 'HowToSection':
+                elif item_type == 'HowToSection':
                     section_name = item.get('name', '')
                     if section_name:
                         steps.append(f"\n{section_name}:")
@@ -497,6 +502,8 @@ def _clean_text(text):
     text = re.sub(r'\s*\(\s*\$\d+(?:\.\d{1,2})?\s*\)', '', text)
     # Also strip standalone prices not in parens: $0.42
     text = re.sub(r'\s*\$\d+(?:\.\d{1,2})?', '', text)
+    # Strip trademark, registered, copyright, and service mark symbols
+    text = re.sub(r'[®™©℠]', '', text)
     # Strip footnote markers (asterisks)
     text = re.sub(r'\*+', '', text)
     # Clean up trailing commas and empty parens left after stripping

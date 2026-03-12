@@ -153,6 +153,41 @@
         }
 
         .manual-link:hover { text-decoration: underline; }
+
+        .mobile-card {
+            border-left: 4px solid #e67e22;
+        }
+
+        .mobile-card h3 {
+            color: #2c3e50;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.4rem;
+            border-bottom: 2px solid #e67e22;
+        }
+
+        .tip {
+            background: #fef9f3;
+            border-radius: 6px;
+            padding: 0.8rem 1rem;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .tip strong {
+            color: #333;
+        }
+
+        .section-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #999;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
     </style>
 </head>
 <body>
@@ -164,8 +199,46 @@
     <div class="container">
         <h2>Save Recipes from Your Browser</h2>
         <p class="intro">
-            Add a bookmarklet to your browser so you can save recipes with one tap while browsing.
+            Add a bookmarklet to your browser so you can save recipes while browsing, or use the
+            quick-add page on mobile.
         </p>
+
+        <div class="card mobile-card">
+            <h3>On Mobile?</h3>
+            <p style="color: #666; line-height: 1.5; margin-bottom: 1rem;">
+                Mobile browsers don't support bookmarklets, but you can still save recipes in a few quick steps:
+            </p>
+
+            <div class="step">
+                <div class="step-num">1</div>
+                <div class="step-text">
+                    While on a recipe page, copy the URL from your browser's address bar.
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-num">2</div>
+                <div class="step-text">
+                    Open <a class="manual-link" id="add-link-mobile" href="/add">the quick-add page</a>
+                    and paste the URL.
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-num">3</div>
+                <div class="step-text">
+                    Tap <strong>"Add Recipe"</strong> and you're done.
+                </div>
+            </div>
+
+            <div class="tip">
+                <strong>Tip:</strong> Add the quick-add page to your home screen for fast access.
+                In your browser's menu, look for <strong>"Add to Home Screen"</strong> or
+                <strong>"Install"</strong>.
+            </div>
+        </div>
+
+        <p class="section-label">Desktop</p>
 
         <div class="card">
             <h3>Setup Instructions</h3>
@@ -243,6 +316,7 @@
 
         document.getElementById('bookmarklet-code').textContent = code;
         document.getElementById('add-link').href = origin + '/add';
+        document.getElementById('add-link-mobile').href = origin + '/add';
 
         function copyCode() {
             navigator.clipboard.writeText(code).then(function() {
