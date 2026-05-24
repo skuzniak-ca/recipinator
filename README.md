@@ -4,13 +4,16 @@ Recipinator is a locally hosted recipe database that runs on your local network.
 
 ## How It Works
 
-Paste a recipe URL into Recipinator and it scrapes the page for structured recipe data (JSON-LD first, falling back to HTML parsing). Ingredients are normalized and stored in SQLite, making them searchable across your collection. Browse recipes in a tile-based grid, filter by ingredients, and rate your favorites.
+1. Paste a recipe URL into Recipinator
+2. It scrapes the page for structured recipe data (JSON-LD first, falling back to HTML parsing)
+3. Ingredients are normalized and stored in SQLite, making them searchable across your collection
+4. Browse recipes in a tile-based grid, filter by ingredients, and rate your favorites
 
 ## Features
 
 - **URL scraping** - paste a link and the app extracts title, ingredients, instructions, and hero image (JSON-LD first, HTML fallback)
 - **Ingredient filtering** - search by one or more ingredients using an autocomplete dropdown with checkboxes (AND logic; selecting chicken and cheese returns recipes containing both)
-- **Star ratings** - rate recipes 0–5 stars
+- **Star ratings** - rate recipes 0-5 stars
 - **Image support** - auto-scraped hero images, or upload your own (png/jpg/gif/webp, 5 MB max)
 - **Bookmarklet** - save recipes from your browser with one tap (setup for your browser at `/bookmarklet`)
 - **Responsive layout** - 4-column grid on desktop down to single-column on mobile
@@ -22,10 +25,18 @@ Flask · SQLite · Gunicorn · Docker · vanilla HTML/CSS/JS (no frontend framew
 
 # Getting Started
 
+## Requirements
+
+- **Docker path (recommended)**: Docker and Docker Compose
+- **Manual path**: Python 3.12+ and `pip`
+- A host on your local network so other devices can reach the app
+
+## Installation
+
 ### Docker (recommended)
 
 ```bash
-git clone https://github.com/skuzniak-ca/recipinator.git 
+git clone https://github.com/skuzniak-ca/recipinator.git
 cd recipinator
 docker compose up -d
 ```
@@ -51,7 +62,9 @@ pip install -r requirements.txt
 python3 app.py
 ```
 
-Open `http://localhost:5000` (or `http://<your-lan-ip>:5000` from other devices on the same network). Replace with your selected port if you specified a different value.
+## Usage
+
+Open `http://localhost:5000` (or `http://<your-lan-ip>:5000` from other devices on the same network). Replace the port if you set a different `HOST_PORT`.
 
 ## Project Structure
 
