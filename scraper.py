@@ -6,7 +6,7 @@ import uuid
 import socket
 import ipaddress
 import logging
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urljoin
 import requests
 from bs4 import BeautifulSoup
 
@@ -36,6 +36,56 @@ def _validate_url(url):
         ip = ipaddress.ip_address(sockaddr[0])
         if ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved:
             raise ValueError("URLs pointing to internal or private networks are not allowed.")
+
+    # Accepted residual risk (LAN tool): this checks the hostname's current
+    # resolution, but requests() resolves again when it connects, so a DNS rebind
+    # between the two lookups could still reach a private IP. Pinning the resolved
+    # IP would close this; deemed unnecessary for a trusted home-network deploy.
+
+
+# Network fetch limits
+MAX_PAGE_BYTES = 3 * 1024 * 1024   # cap HTML page reads at 3MB
+MAX_IMAGE_BYTES = 5 * 1024 * 1024  # cap image downloads at 5MB
+MAX_REDIRECTS = 5
+
+
+def _read_capped(response, max_bytes):
+    """Read a streamed response body, aborting if it exceeds max_bytes."""
+    chunks = []
+    total = 0
+    for chunk in response.iter_content(8192):
+        total += len(chunk)
+        if total > max_bytes:
+            response.close()
+            raise ValueError("Response body exceeded the size limit.")
+        chunks.append(chunk)
+    return b''.join(chunks)
+
+
+def _safe_get(url, headers, timeout, max_bytes):
+    """GET a URL with SSRF protection on every hop and a hard byte cap.
+
+    Redirects are followed manually so each Location is re-validated against the
+    private-network blocklist (requests' automatic redirects would not be).
+    Returns (final_response, body_bytes); raises ValueError on a blocked URL or
+    oversize body, or requests.RequestException on a transport failure.
+    """
+    _validate_url(url)
+    response = requests.get(url, headers=headers, timeout=timeout,
+                            allow_redirects=False, stream=True)
+    redirects = 0
+    while response.is_redirect and redirects < MAX_REDIRECTS:
+        location = response.headers.get('Location', '')
+        response.close()
+        if not location:
+            break
+        url = urljoin(url, location)  # resolve relative redirects
+        _validate_url(url)
+        response = requests.get(url, headers=headers, timeout=timeout,
+                                allow_redirects=False, stream=True)
+        redirects += 1
+    response.raise_for_status()
+    return response, _read_capped(response, max_bytes)
 
 
 # Units and measurements to strip from ingredient text
@@ -348,31 +398,21 @@ def scrape_recipe(url):
     Raises:
         ValueError: If scraping fails or no recipe data found
     """
-    _validate_url(url)
-
     headers = {
         'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 '
                        '(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
     }
 
     try:
-        response = requests.get(url, headers=headers, timeout=15, allow_redirects=False)
-        # Handle redirects manually to validate each target
-        redirect_count = 0
-        while response.is_redirect and redirect_count < 5:
-            redirect_url = response.headers.get('Location', '')
-            if redirect_url:
-                _validate_url(redirect_url)
-            response = requests.get(redirect_url, headers=headers, timeout=15, allow_redirects=False)
-            redirect_count += 1
-        response.raise_for_status()
+        _, body = _safe_get(url, headers, timeout=15, max_bytes=MAX_PAGE_BYTES)
     except ValueError:
         raise
     except requests.RequestException as e:
         logger.warning("Failed to fetch recipe URL: %s", e)
         raise ValueError("Failed to fetch URL. The site may be unavailable or blocking requests.")
 
-    soup = BeautifulSoup(response.text, 'lxml')
+    # BeautifulSoup detects the encoding from the raw bytes (and any meta charset).
+    soup = BeautifulSoup(body, 'lxml')
 
     # Try JSON-LD first (most reliable)
     result = _try_json_ld(soup)
@@ -454,6 +494,7 @@ def download_image(image_url, save_dir):
 
     Returns the saved filename on success, None on failure.
     Failures are silent — image download should never prevent recipe saving.
+    Uses _safe_get so redirects are SSRF-validated and the body is size-capped.
     """
     if not image_url:
         return None
@@ -463,21 +504,14 @@ def download_image(image_url, save_dir):
         image_url = 'https:' + image_url
 
     try:
-        _validate_url(image_url)
-
         headers = {
             'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 '
                            '(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
         }
-        response = requests.get(image_url, headers=headers, timeout=10)
-        response.raise_for_status()
-
-        # Enforce 5MB size limit
-        if len(response.content) > 5 * 1024 * 1024:
-            return None
+        _, content = _safe_get(image_url, headers, timeout=10, max_bytes=MAX_IMAGE_BYTES)
 
         # Validate actual image content via magic bytes
-        ext = _validate_image_content(response.content)
+        ext = _validate_image_content(content)
         if not ext:
             logger.warning("Downloaded file is not a valid image: %s", image_url)
             return None
@@ -485,7 +519,7 @@ def download_image(image_url, save_dir):
         filename = f"{uuid.uuid4().hex}.{ext}"
         filepath = os.path.join(save_dir, filename)
         with open(filepath, 'wb') as f:
-            f.write(response.content)
+            f.write(content)
 
         return filename
     except Exception:

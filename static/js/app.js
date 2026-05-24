@@ -85,7 +85,7 @@ function getImageUrl(recipe) {
     return '/static/placeholder.svg';
 }
 
-function renderStarsHTML(rating, size = 'small') {
+function renderStarsHTML(rating) {
     let html = '';
     for (let i = 1; i <= 5; i++) {
         if (i <= rating) {
@@ -121,12 +121,6 @@ function renderGrid() {
         tile.addEventListener('click', () => openDetail(recipe.id));
         grid.appendChild(tile);
     });
-}
-
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
 }
 
 // --- Add Recipe ---

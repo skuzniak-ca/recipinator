@@ -107,7 +107,7 @@ def get_recipe(recipe_id):
 
 
 def update_rating(recipe_id, rating):
-    """Set star rating (1-5) for a recipe."""
+    """Set star rating (0-5) for a recipe."""
     if not (0 <= rating <= 5):
         raise ValueError("Rating must be between 0 and 5")
     conn = get_db()

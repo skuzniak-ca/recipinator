@@ -13,7 +13,13 @@ app = Flask(__name__)
 
 @app.before_request
 def csrf_check():
-    """Block cross-origin mutating requests (CSRF protection)."""
+    """Block cross-origin mutating requests (CSRF protection).
+
+    Accepted residual risk (LAN tool, no-auth-by-design): a request carrying
+    neither an Origin nor a Referer header is allowed through. Browsers send
+    Origin on cross-origin mutations, so the browser-driven CSRF case is still
+    blocked; the gap only matters for non-browser clients on the trusted LAN.
+    """
     if request.method in ('POST', 'PUT', 'DELETE'):
         origin = request.headers.get('Origin')
         referer = request.headers.get('Referer')
@@ -33,7 +39,13 @@ def security_headers(response):
     """Add security headers to all responses."""
     response.headers['X-Content-Type-Options'] = 'nosniff'
     response.headers['X-Frame-Options'] = 'DENY'
-    response.headers['X-XSS-Protection'] = '1; mode=block'
+    # X-XSS-Protection is deprecated and can itself introduce bugs; modern
+    # guidance is to disable the legacy auditor and rely on CSP instead.
+    response.headers['X-XSS-Protection'] = '0'
+    response.headers['Referrer-Policy'] = 'no-referrer'
+    response.headers['Permissions-Policy'] = 'geolocation=(), microphone=(), camera=()'
+    # script-src keeps 'unsafe-inline' because add.html/bookmarklet.html use inline
+    # scripts; tightening it would require moving those into static .js files.
     response.headers['Content-Security-Policy'] = (
         "default-src 'self'; "
         "script-src 'self' 'unsafe-inline'; "
@@ -56,11 +68,16 @@ def _check_scrape_rate_limit():
     ip = request.remote_addr
     now = time.monotonic()
     with _scrape_lock:
+        # Sweep stale entries so the dict can't grow unbounded over time.
+        for known_ip in list(_scrape_timestamps):
+            fresh = [t for t in _scrape_timestamps[known_ip] if now - t < SCRAPE_RATE_WINDOW]
+            if fresh:
+                _scrape_timestamps[known_ip] = fresh
+            else:
+                del _scrape_timestamps[known_ip]
+
         timestamps = _scrape_timestamps.get(ip, [])
-        # Remove timestamps outside the window
-        timestamps = [t for t in timestamps if now - t < SCRAPE_RATE_WINDOW]
         if len(timestamps) >= SCRAPE_RATE_LIMIT:
-            _scrape_timestamps[ip] = timestamps
             return True
         timestamps.append(now)
         _scrape_timestamps[ip] = timestamps
