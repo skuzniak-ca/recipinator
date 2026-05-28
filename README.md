@@ -16,6 +16,7 @@ Recipinator is a locally hosted recipe database that runs on your local network.
 - **Star ratings** - rate recipes 0-5 stars
 - **Image support** - auto-scraped hero images, or upload your own (png/jpg/gif/webp, 5 MB max)
 - **Bookmarklet** - save recipes from your browser with one tap (setup for your browser at `/bookmarklet`)
+- **Shopping list** - pick a set of recipes and get a combined ingredient list at `/shopping`; same ingredient in different units is converted into one line where possible (with a small density table to merge weight + volume of things like flour or sugar), with Copy and Print buttons
 - **Responsive layout** - 4-column grid on desktop down to single-column on mobile
 - **No account required** - designed for trusted home networks - there is no authentication by design!
 
@@ -73,6 +74,7 @@ recipinator/
 ├── app.py                  # Flask routes, security middleware, image upload handling
 ├── database.py             # SQLite schema, CRUD helpers, ingredient filtering
 ├── scraper.py              # Recipe scraping, ingredient normalization, URL validation
+├── shopping.py             # Quantity parsing, unit conversion, ingredient aggregation
 ├── requirements.txt        # Python dependencies
 ├── Dockerfile              # Container image (Python 3.12-slim, gunicorn)
 ├── docker-compose.yml      # Service config with named volumes for DB and uploads
@@ -81,12 +83,14 @@ recipinator/
 ├── templates/
 │   ├── index.html          # Single-page app template
 │   ├── add.html            # Standalone add-recipe page (bookmarklet target)
-│   └── bookmarklet.html    # Setup instructions for bookmarklet
+│   ├── bookmarklet.html    # Setup instructions for bookmarklet
+│   └── shopping.html       # Shopping list page
 └── static/
     ├── css/
     │   └── style.css       # Responsive layout and styling
     ├── js/
-    │   └── app.js          # SPA logic (API calls, DOM rendering)
+    │   ├── app.js          # SPA logic (API calls, DOM rendering)
+    │   └── shopping.js     # Shopping list page logic
     └── uploads/            # User-uploaded images (gitignored)
 ```
 
@@ -96,6 +100,7 @@ recipinator/
 |--------|-------|---------|
 | GET | `/add` | Standalone add page (accepts `?url=` for bookmarklet) |
 | GET | `/bookmarklet` | Bookmarklet setup instructions |
+| GET | `/shopping` | Shopping list builder |
 | GET | `/api/recipes` | List all or filter (`?ingredients=chicken;garlic`) |
 | GET | `/api/recipes/<id>` | Single recipe detail |
 | POST | `/api/recipes` | Add recipe (`{"url": "..."}`) |
@@ -104,6 +109,7 @@ recipinator/
 | DELETE | `/api/recipes/<id>/image` | Remove image |
 | DELETE | `/api/recipes/<id>` | Delete recipe |
 | GET | `/api/ingredients` | Unique ingredient names (for autocomplete) |
+| POST | `/api/shopping-list` | Combined ingredients for a recipe set (`{"recipe_ids": [1, 2]}`) |
 
 
 ## Acknowledgements

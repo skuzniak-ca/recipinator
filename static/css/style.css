@@ -29,6 +29,11 @@ header h1 {
     letter-spacing: 0.5px;
 }
 
+.header-home {
+    color: white;
+    text-decoration: none;
+}
+
 .header-link {
     color: rgba(255, 255, 255, 0.8);
     text-decoration: none;
@@ -38,6 +43,12 @@ header h1 {
 
 .header-link:hover {
     color: white;
+}
+
+.header-link-active {
+    color: white;
+    border-bottom: 2px solid #e67e22;
+    padding-bottom: 2px;
 }
 
 /* Buttons */
@@ -541,6 +552,191 @@ header h1 {
 .detail-instructions p {
     line-height: 1.7;
     margin-bottom: 0.5rem;
+}
+
+/* Shopping List Page */
+.shopping-page {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem 1rem 6rem;
+}
+
+.shopping-intro {
+    margin-bottom: 1.5rem;
+}
+
+.shopping-intro h2 {
+    color: #2c3e50;
+    font-size: 1.4rem;
+    margin-bottom: 0.3rem;
+}
+
+.shopping-intro p {
+    color: #666;
+    line-height: 1.5;
+}
+
+.shopping-toolbar {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.shopping-toolbar input[type="text"] {
+    flex: 1;
+    min-width: 200px;
+    padding: 0.6rem 1rem;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.95rem;
+}
+
+.shopping-toolbar input[type="text"]:focus {
+    outline: none;
+    border-color: #e67e22;
+}
+
+.shopping-toolbar-buttons {
+    display: flex;
+    gap: 0.4rem;
+}
+
+.recipe-list {
+    list-style: none;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+}
+
+.recipe-list-item {
+    border-bottom: 1px solid #eee;
+}
+
+.recipe-list-item:last-child {
+    border-bottom: none;
+}
+
+.recipe-list-item label {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.7rem 1rem;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.recipe-list-item label:hover {
+    background: #fef9f3;
+}
+
+.recipe-list-item input[type="checkbox"] {
+    accent-color: #e67e22;
+    width: 1.1rem;
+    height: 1.1rem;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.recipe-list-title {
+    font-size: 0.95rem;
+    color: #333;
+}
+
+.recipe-list-empty {
+    padding: 1rem;
+    text-align: center;
+    color: #999;
+}
+
+.generate-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    border-top: 1px solid #ddd;
+    box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.08);
+    padding: 0.9rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    z-index: 50;
+}
+
+.selection-count {
+    color: #555;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+/* Combined ingredient list (in modal) */
+.combined-list {
+    list-style: none;
+}
+
+.combined-item {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.combined-item:last-child {
+    border-bottom: none;
+}
+
+.combined-text {
+    display: block;
+    line-height: 1.4;
+    color: #333;
+}
+
+.combined-sources {
+    display: block;
+    margin-top: 0.15rem;
+    font-size: 0.78rem;
+    color: #999;
+    font-style: italic;
+}
+
+.combined-empty {
+    padding: 1rem;
+    text-align: center;
+    color: #999;
+}
+
+.copy-feedback {
+    color: #27ae60;
+    font-weight: 600;
+    align-self: center;
+    display: none;
+}
+
+/* Print: hide everything except the combined shopping list */
+@media print {
+    body * { visibility: hidden; }
+    #modal-list, #modal-list * { visibility: visible; }
+    #modal-list {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        background: white;
+        padding: 0;
+        display: block !important;
+    }
+    .modal-content {
+        box-shadow: none;
+        max-height: none;
+        max-width: 100%;
+    }
+    .no-print, .combined-sources { display: none !important; }
+    .combined-item {
+        padding: 0.3rem 0;
+        page-break-inside: avoid;
+    }
+    .modal-body { padding: 0; }
 }
 
 /* Responsive: Tablet */

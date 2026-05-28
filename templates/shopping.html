@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping List - Recipinator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header>
+        <h1><a href="/" class="header-home">Recipinator</a></h1>
+        <div class="header-actions">
+            <a href="/shopping" class="header-link header-link-active">Shopping List</a>
+            <a href="/bookmarklet" class="header-link">Bookmarklet</a>
+        </div>
+    </header>
+
+    <div class="shopping-page">
+        <div class="shopping-intro">
+            <h2>Build a shopping list</h2>
+            <p>Pick the recipes you're cooking. The list combines repeated ingredients and converts compatible units.</p>
+        </div>
+
+        <div class="shopping-toolbar">
+            <input type="text" id="title-filter" placeholder="Search recipes by title..." autocomplete="off">
+            <div class="shopping-toolbar-buttons">
+                <button id="btn-select-all" class="btn btn-secondary">Select all</button>
+                <button id="btn-clear-selection" class="btn btn-secondary">Clear</button>
+            </div>
+        </div>
+
+        <ul id="recipe-list" class="recipe-list"></ul>
+
+        <div id="empty-state" class="empty-state" style="display:none;">
+            <p>No recipes yet. Add some from the main page first.</p>
+        </div>
+    </div>
+
+    <div id="generate-bar" class="generate-bar" style="display:none;">
+        <span id="selection-count" class="selection-count">0 recipes selected</span>
+        <button id="btn-generate" class="btn btn-primary">Generate Shopping List</button>
+    </div>
+
+    <!-- Shopping List Modal -->
+    <div id="modal-list" class="modal" style="display:none;">
+        <div class="modal-content modal-large shopping-modal">
+            <div class="modal-header no-print">
+                <h2>Shopping List</h2>
+                <button class="modal-close" id="btn-close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="list-loading" class="loading" style="display:none;">
+                    <div class="spinner"></div>
+                    <p>Combining ingredients...</p>
+                </div>
+                <div id="list-error" class="error-msg" style="display:none;"></div>
+                <ul id="combined-list" class="combined-list"></ul>
+            </div>
+            <div class="modal-footer no-print">
+                <button id="btn-copy" class="btn btn-secondary">Copy</button>
+                <span id="copy-feedback" class="copy-feedback">Copied</span>
+                <button id="btn-print" class="btn btn-primary">Print</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/shopping.js') }}"></script>
+</body>
+</html>

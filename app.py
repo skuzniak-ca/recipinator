@@ -7,6 +7,7 @@ from flask import Flask, request, jsonify, render_template
 from database import init_db, add_recipe, get_all_recipes, get_recipe, \
     update_rating, update_image, filter_recipes, delete_recipe, get_all_ingredient_names
 from scraper import scrape_recipe, download_image, _validate_image_content
+from shopping import combine_ingredients
 
 app = Flask(__name__)
 
@@ -110,6 +111,11 @@ def add_page():
 @app.route('/bookmarklet')
 def bookmarklet_page():
     return render_template('bookmarklet.html')
+
+
+@app.route('/shopping')
+def shopping_page():
+    return render_template('shopping.html')
 
 
 # --- API Routes ---
@@ -264,6 +270,27 @@ def api_delete_recipe(recipe_id):
 @app.route('/api/ingredients', methods=['GET'])
 def api_get_ingredients():
     return jsonify(get_all_ingredient_names())
+
+
+@app.route('/api/shopping-list', methods=['POST'])
+def api_shopping_list():
+    data = request.get_json(silent=True)
+    if not data or not isinstance(data.get('recipe_ids'), list):
+        return jsonify({'error': 'recipe_ids (list of integers) is required'}), 400
+
+    ids = data['recipe_ids']
+    if not all(isinstance(i, int) for i in ids):
+        return jsonify({'error': 'recipe_ids must contain integers'}), 400
+    if not ids:
+        return jsonify([])
+
+    recipes = []
+    for rid in ids:
+        r = get_recipe(rid)
+        if r is not None:
+            recipes.append(r)
+
+    return jsonify(combine_ingredients(recipes))
 
 
 init_db()
